@@ -36,3 +36,4 @@ int main(int agrc, char **argv){
     generate_data(atoi(argv[1]));
     return 0;
 }
+
