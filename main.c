@@ -3,19 +3,8 @@
 #include <stdlib.h>
 #include <time.h>
 
-void get_data(int *a, int *b, int size){
+void get_data(int *a, int *b, int size, FILE* file_a, FILE* file_b){
 
-    FILE* file_a = fopen("a", "r");
-    FILE* file_b = fopen("b", "r");
-
-    char type_a = fgetc(file_a);
-    char type_b = fgetc(file_b);
-
-    if (type_a != type_b) printf("Error, different matrix types\n");
-
-    int size_a, size_b;
-    fscanf(file_a, "%d", &size_a);
-    fscanf(file_b, "%d", &size_b);
     for (int i = 0; i < size * size; i++){
         fscanf(file_a, "%d", &a[i]);
         fscanf(file_b, "%d", &b[i]);
@@ -106,13 +95,27 @@ void multiply_kji(int *a, int *b, int *c, int size){
 
 int main(int argc, char **argv){
 
-    int size = 10;
+    FILE* file_a = fopen(argv[1], "r");
+    FILE* file_b = fopen(argv[2], "r");
+
+    char type_a = fgetc(file_a);
+    char type_b = fgetc(file_b);
+
+    if (type_a != type_b) { printf("Error, different matrix types\n"); return -1; }
+
+    int size_a, size_b;
+    fscanf(file_a, "%d", &size_a);
+    fscanf(file_b, "%d", &size_b);
+
+    if (size_a != size_b) { printf("Error, different matrix sizes"); return -1; }
+
+    int size = size_a;
 
     int *a = (int *)calloc(size*size, sizeof(int));
     int *b = (int *)calloc(size*size, sizeof(int));
     int *c = (int *)calloc(size*size, sizeof(int));
 
-    get_data(a, b, size);
+    get_data(a, b, size, file_a, file_b);
 
     //print(a, size);
     //print(b, size);
@@ -146,6 +149,12 @@ int main(int argc, char **argv){
 
     //print(c, size);
 
+    FILE* file_c = fopen(argv[3], "w");
+    for (int i = 0; i < size; i++){
+        for (int j = 0; j < size; j++){
+            fprintf(file_c, "%d ", c[i * size + j]);
+        }
+    }
 
     free(a);
     free(b);

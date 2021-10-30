@@ -32,7 +32,7 @@ void generate_data(int size){
     fclose(b);
 }
 
-int main(){
-    generate_data(10);
+int main(int agrc, char **argv){
+    generate_data(atoi(argv[1]));
     return 0;
 }
