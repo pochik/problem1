@@ -7,6 +7,10 @@ void generate_data(int size){
     FILE *b;
     a = fopen("a", "w");
     b = fopen("b", "w");
+    fprintf(a, "d ");
+    fprintf(b, "d ");
+    fprintf(a, "%d ", size);
+    fprintf(b, "%d ", size);
     srand(time(NULL));
     for (int i = 0; i < size; i++){
         for (int j = 0; j < size; j++){

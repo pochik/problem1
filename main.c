@@ -1,24 +1,29 @@
 #include <stdio.h>
 #include <time.h>
 #include <stdlib.h>
+#include <time.h>
 
-void generate_data(int *a, int *b, int size){
-    srand(time(NULL));
-    for (int i = 0; i < size; i++){
-        for (int j = 0; j < size; j++){
-            int tmp = 0;
-            while (tmp < 10){
-                tmp = rand() % 100;
-            }
-            a[i * size + j] = tmp;
-            tmp = 0;
-            while (tmp < 10){
-                tmp = rand() % 100;
-            }
-            b[i * size + j] = tmp;
-        }
+void get_data(int *a, int *b, int size){
+
+    FILE* file_a = fopen("a", "r");
+    FILE* file_b = fopen("b", "r");
+
+    char type_a = fgetc(file_a);
+    char type_b = fgetc(file_b);
+
+    if (type_a != type_b) printf("Error, different matrix types\n");
+
+    int size_a, size_b;
+    fscanf(file_a, "%d", &size_a);
+    fscanf(file_b, "%d", &size_b);
+    for (int i = 0; i < size * size; i++){
+        fscanf(file_a, "%d", &a[i]);
+        fscanf(file_b, "%d", &b[i]);
+        if (feof(file_a)) break;
+        if (feof(file_b)) break;
     }
 }
+
 
 void print(int *a, int size){
     printf("\n");
@@ -31,11 +36,68 @@ void print(int *a, int size){
     printf("\n");
 }
 
-void multiply(int *a, int *b, int *c, int size){
+void zero(int *a, int size){
+    for (int i = 0; i < size * size; i++)
+        a[i] = 0;
+}
+
+void multiply_ijk(int *a, int *b, int *c, int size){
     for (int i = 0; i < size; i++){
         for (int j = 0; j < size; j++){
-            c[i * size + j] = 0;
             for (int k = 0; k < size; k++){
+                c[i * size + j] += a[i * size + k] * b[k * size + j];
+            }
+        }
+    }
+}
+
+void multiply_ikj(int *a, int *b, int *c, int size){
+    for (int i = 0; i < size; i++){
+        for (int k = 0; k < size; k++){
+            for (int j = 0; j < size; j++){
+                c[i * size + j] += a[i * size + k] * b[k * size + j];
+            }
+        }
+    }
+}
+
+void multiply_jik(int *a, int *b, int *c, int size){
+    for (int j = 0; j < size; j++){
+        for (int i = 0; i < size; i++){
+            for (int k = 0; k < size; k++){
+                c[i * size + j] += a[i * size + k] * b[k * size + j];
+            }
+        }
+    }
+}
+
+
+void multiply_jki(int *a, int *b, int *c, int size){
+    for (int j = 0; j < size; j++){
+        for (int k = 0; k < size; k++){
+            for (int i = 0; i < size; i++){
+                c[i * size + j] += a[i * size + k] * b[k * size + j];
+            }
+        }
+    }
+}
+
+
+void multiply_kij(int *a, int *b, int *c, int size){
+    for (int k = 0; k < size; k++){
+        for (int i = 0; i < size; i++){
+            for (int j = 0; j < size; j++){
+                c[i * size + j] += a[i * size + k] * b[k * size + j];
+            }
+        }
+    }
+}
+
+
+void multiply_kji(int *a, int *b, int *c, int size){
+    for (int k = 0; k < size; k++){
+        for (int j = 0; j < size; j++){
+            for (int i = 0; i < size; i++){
                 c[i * size + j] += a[i * size + k] * b[k * size + j];
             }
         }
@@ -44,18 +106,50 @@ void multiply(int *a, int *b, int *c, int size){
 
 int main(int argc, char **argv){
 
-    int size = 2;
+    int size = 10;
 
     int *a = (int *)calloc(size*size, sizeof(int));
     int *b = (int *)calloc(size*size, sizeof(int));
     int *c = (int *)calloc(size*size, sizeof(int));
 
-    generate_data(a, b, size);
-    print(a, size);
-    print(b, size);
+    get_data(a, b, size);
 
-    multiply(a, b, c, size);
-    print(c, size);
+    //print(a, size);
+    //print(b, size);
+
+    zero(c, size);
+
+    clock_t start, stop;
+    start = clock();
+
+    if (atoi(argv[4]) == 0)
+            multiply_ijk(a, b, c, size);
+
+    else if (atoi(argv[4]) == 1)
+            multiply_ikj(a, b, c, size);
+
+    else if (atoi(argv[4]) == 2)
+            multiply_kij(a, b, c, size);
+
+    else if (atoi(argv[4]) == 3)
+            multiply_jik(a, b, c, size);
+
+    else if (atoi(argv[4]) == 4)
+            multiply_jki(a, b, c, size);
+
+    else if (atoi(argv[4]) == 5)
+            multiply_kji(a, b, c, size);
+
+    stop = clock();
+    double seconds = (double)(stop - start) / CLOCKS_PER_SEC;
+    printf("%f\n", seconds);
+
+    //print(c, size);
+
+
+    free(a);
+    free(b);
+    free(c);
 
     return 0;
 }
