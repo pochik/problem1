@@ -2,6 +2,7 @@
 #include <time.h>
 #include <stdlib.h>
 #include <time.h>
+#include <papi.h>
 
 void get_data(int *a, int *b, int size, FILE* file_a, FILE* file_b){
 
@@ -82,7 +83,6 @@ void multiply_kij(int *a, int *b, int *c, int size){
     }
 }
 
-
 void multiply_kji(int *a, int *b, int *c, int size){
     for (int k = 0; k < size; k++){
         for (int j = 0; j < size; j++){
@@ -125,6 +125,105 @@ int main(int argc, char **argv){
     clock_t start, stop;
     start = clock();
 
+    long long L1_LOAD, L1_STORE, L1_CACHE, L2_LOAD, L2_STORE, L2_CACHE;
+    int retval = 0;
+    int event_set_L1_LOAD = PAPI_NULL;
+    int event_set_L1_STORE = PAPI_NULL;
+    int event_set_L1_CACHE = PAPI_NULL;
+
+    int event_set_L2_LOAD = PAPI_NULL;
+    int event_set_L2_STORE = PAPI_NULL;
+    int event_set_L2_CACHE = PAPI_NULL;
+
+    //Initialization
+
+    retval = PAPI_library_init(PAPI_VER_CURRENT);
+    if (retval != PAPI_VER_CURRENT) {
+        fputs("failed to initialize PAPI\n", stderr);
+        printf("%d %d\n", retval, PAPI_VER_CURRENT);
+        return 1;
+    }
+
+    //Create eventset
+    if (PAPI_create_eventset(&event_set_L1_LOAD) != PAPI_OK) {
+        fputs("unable to create event set\n", stderr);
+        return 2;
+    }
+    if (PAPI_create_eventset(&event_set_L1_STORE) != PAPI_OK) {
+        fputs("unable to create event set\n", stderr);
+        return 2;
+    }
+    if (PAPI_create_eventset(&event_set_L1_CACHE) != PAPI_OK) {
+        fputs("unable to create event set\n", stderr);
+        return 2;
+    }
+    if (PAPI_create_eventset(&event_set_L2_LOAD) != PAPI_OK) {
+        fputs("unable to create event set\n", stderr);
+        return 2;
+    }
+    if (PAPI_create_eventset(&event_set_L1_STORE) != PAPI_OK) {
+        fputs("unable to create event set\n", stderr);
+        return 2;
+    }
+    if (PAPI_create_eventset(&event_set_L1_CACHE) != PAPI_OK) {
+        fputs("unable to create event set\n", stderr);
+        return 2;
+    }
+
+    //Add eventset
+
+    if (PAPI_add_event(event_set_L1_LOAD, PAPI_L1_LDM) != PAPI_OK) {
+        fputs("can't add event\n", stderr);
+        return 3;
+    }
+    if (PAPI_add_event(event_set_L1_STORE, PAPI_L1_STM) != PAPI_OK) {
+        fputs("can't add event\n", stderr);
+        return 3;
+    }
+    if (PAPI_add_event(event_set_L1_CACHE, PAPI_L1_TCM) != PAPI_OK) {
+        fputs("can't add event\n", stderr);
+        return 3;
+    }
+    if (PAPI_add_event(event_set_L2_LOAD, PAPI_L2_LDM) != PAPI_OK) {
+        fputs("can't add event\n", stderr);
+        return 3;
+    }
+    if (PAPI_add_event(event_set_L2_STORE, PAPI_L2_STM) != PAPI_OK) {
+        fputs("can't add event\n", stderr);
+        return 3;
+    }
+    if (PAPI_add_event(event_set_L2_CACHE, PAPI_L2_TCM) != PAPI_OK) {
+        fputs("can't add event\n", stderr);
+        return 3;
+    }
+
+    //Start
+    if (PAPI_start(event_set_L1_LOAD) != PAPI_OK) {
+        fputs("failed to start counters\n", stderr);
+        return 4;
+    }
+    if (PAPI_start(event_set_L1_STORE) != PAPI_OK) {
+        fputs("failed to start counters\n", stderr);
+        return 4;
+    }
+    if (PAPI_start(event_set_L1_CACHE) != PAPI_OK) {
+        fputs("failed to start counters\n", stderr);
+        return 4;
+    }
+    if (PAPI_start(event_set_L2_LOAD) != PAPI_OK) {
+        fputs("failed to start counters\n", stderr);
+        return 4;
+    }
+    if (PAPI_start(event_set_L2_STORE) != PAPI_OK) {
+        fputs("failed to start counters\n", stderr);
+        return 4;
+    }
+    if (PAPI_start(event_set_L2_CACHE) != PAPI_OK) {
+        fputs("failed to start counters\n", stderr);
+        return 4;
+    }
+
+    //Code
     if (atoi(argv[4]) == 0)
             multiply_ijk(a, b, c, size);
 
@@ -142,6 +241,43 @@ int main(int argc, char **argv){
 
     else if (atoi(argv[4]) == 5)
             multiply_kji(a, b, c, size);
+
+
+    //Stop
+    if (PAPI_stop(event_set_L1_LOAD, &L1_LOAD) != PAPI_OK) {
+        fputs("error in stop counters 1\n", stderr);
+        return 5;
+    }
+    if (PAPI_stop(event_set_L1_STORE, &L1_STORE) != PAPI_OK) {
+        fputs("error in stop counters 1\n", stderr);
+        return 5;
+    }
+    if (PAPI_stop(event_set_L1_CACHE, &L1_CACHE) != PAPI_OK) {
+        fputs("error in stop counters 1\n", stderr);
+        return 5;
+    }
+    if (PAPI_stop(event_set_L2_LOAD, &L2_LOAD) != PAPI_OK) {
+        fputs("error in stop counters 1\n", stderr);
+        return 5;
+    }
+    if (PAPI_stop(event_set_L2_STORE, &L2_STORE) != PAPI_OK) {
+        fputs("error in stop counters 1\n", stderr);
+        return 5;
+    }
+    if (PAPI_stop(event_set_L2_CACHE, &L2_CACHE) != PAPI_OK) {
+        fputs("error in stop counters 1\n", stderr);
+        return 5;
+    }
+
+    //Print
+    printf("L1 LOAD = %lld \n"
+            "L1 STORE = %lld \n"
+            "L1 CACHE = %lld \n"
+            "L2 LOAD = %lld \n"
+            "L2 STORE = %lld \n"
+            "L2 CACHE = %lld \n",
+            L1_LOAD, L1_STORE, L1_CACHE,
+            L2_LOAD, L2_STORE, L2_CACHE);
 
     stop = clock();
     double seconds = (double)(stop - start) / CLOCKS_PER_SEC;
